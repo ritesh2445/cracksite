@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CR4CK - Modern hacker-style website">
+    <meta name="keywords" content="CR4CK, hacker, cybersecurity, tech">
+    <title>CR4CK</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-green': '#39FF14',
+                        'dark-bg': '#0a0a0a',
+                        'terminal-black': '#121212',
+                    },
+                    fontFamily: {
+                        'mono': ['Courier New', 'monospace'],
+                        'glitch': ['Courier New', 'monospace'],
+                    },
+                    animation: {
+                        'flicker': 'flicker 2s linear infinite',
+                        'glitch': 'glitch 1s linear infinite',
+                    },
+                    keyframes: {
+                        flicker: {
+                            '0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100%': { opacity: 1 },
+                            '20%, 21.999%, 63%, 63.999%, 65%, 69.999%': { opacity: 0.33 },
+                        },
+                        glitch: {
+                            '0%, 100%': { transform: 'translate(0)' },
+                            '33%': { transform: 'translate(-5px, 2px)' },
+                            '66%': { transform: 'translate(5px, -2px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            overflow-x: hidden;
+        }
+        
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            color: #ff00ff;
+            z-index: -1;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        
+        .glitch::after {
+            color: #00ffff;
+            z-index: -2;
+            animation: glitch-anim2 3s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        @keyframes glitch-anim2 {
+            0% { transform: translate(0); }
+            20% { transform: translate(3px, -3px); }
+            40% { transform: translate(3px, 3px); }
+            60% { transform: translate(-3px, -3px); }
+            80% { transform: translate(-3px, 3px); }
+            100% { transform: translate(0); }
+        }
+        
+        .terminal-text::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Pop-up styles */
+        .contact-popup {
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-popup.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Loading animation */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            color: #39FF14;
+        }
+        
+        /* Cyber signature styles */
+        .cyber-signature {
+            font-size: 1.2rem;
+            letter-spacing: 0.25em;
+            margin-top: 1.5rem;
+            background: linear-gradient(to right, #39FF14, #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .cyber-signature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background: #39FF14;
+            animation: scan 2s infinite alternate;
+        }
+        
+        @keyframes scan {
+            0%, 100% { height: 0%; top: 100%; }
+            50% { height: 100%; top: 0; }
+        }
+        
+        /* Particle effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Pulse border effect */
+        .pulse-border {
+            position: relative;
+        }
+        
+        .pulse-border::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid transparent;
+            border-radius: inherit;
+            animation: pulse-border 2s infinite;
+        }
+        
+        @keyframes pulse-border {
+            0% {
+                border-color: rgba(57, 255, 20, 0);
+                transform: scale(1);
+            }
+            50% {
+                border-color: rgba(57, 255, 20, 0.7);
+                transform: scale(1.05);
+            }
+            100% {
+                border-color: rgba(57, 255, 20, 0);
+                transform: scale(1);
+            }
+        }
+        
+        /* Floating animation */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Text scramble effect */
+        .scramble-text {
+            display: inline-block;
+        }
+        
+        /* 3D Card Effect */
+        .card-3d {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            backface-visibility: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 15px 30px rgba(0, 255, 170, 0.2);
+        }
+        
+        .card-3d.animated {
+            animation: card-entrance 0.8s forwards;
+        }
+        
+        /* Special animation when triggered by Discover button click */
+        .card-3d.discover-animated {
+            animation: card-discover-entrance 1.2s forwards;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+        }
+        
+        @keyframes card-entrance {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.8) rotateX(25deg) rotateY(-15deg);
+                filter: blur(3px);
+                border-radius: 24px;
+            }
+            70% {
+                opacity: 1;
+                transform: translateY(-5px) scale(1.05) rotateX(-5deg) rotateY(5deg);
+                filter: blur(0);
+                border-radius: 18px;
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0) rotateY(0);
+                filter: blur(0);
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(57, 255, 20, 0.15);
+            }
+        }
+        
+        @keyframes card-discover-entrance {
+            0% {
+                opacity: 0;
+                transform: translateY(60px) scale(0.7) rotateX(35deg) rotateY(-25deg);
+                filter: blur(5px);
+                border-radius: 28px;
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-15px) scale(1.1) rotateX(-10deg) rotateY(10deg);
+                filter: blur(0);
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(57, 255, 20, 0.4);
+            }
+            75% {
+                transform: translateY(5px) scale(0.95) rotateX(5deg) rotateY(-5deg);
+                box-shadow: 0 15px 30px rgba(57, 255, 20, 0.3);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0) rotateY(0);
+                filter: blur(0);
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(57, 255, 20, 0.2);
+            }
+        }
+        
+        .card-3d .card-content {
+            transform: translateZ(10px);
+            transform-style: preserve-3d;
+        }
+        
+        /* Terminal glow effect */
+        .terminal-glow {
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3), 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 30px rgba(57, 255, 20, 0.1);
+            animation: terminal-pulse 4s infinite alternate;
+        }
+        
+        @keyframes terminal-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(57, 255, 20, 0.3), 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 30px rgba(57, 255, 20, 0.1); }
+            50% { box-shadow: 0 0 15px rgba(57, 255, 20, 0.4), 0 0 30px rgba(57, 255, 20, 0.3), inset 0 0 40px rgba(57, 255, 20, 0.2); }
+        }
+        
+        /* Terminal Matrix Rain Effect */
+        .terminal-matrix-rain {
+            opacity: 0.15;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .matrix-character {
+            color: #39FF14;
+            font-family: monospace;
+            font-size: 14px;
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.8);
+            animation-name: matrix-fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        
+        @keyframes matrix-fall {
+            0% {
+                transform: translateY(-100%);
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh));
+                opacity: 0.3;
+            }
+        }
+        
+        /* Advanced Glitch Effect for Main Title */
+        .advanced-glitch {
+            position: relative;
+            animation: glitch-skew 1s infinite alternate-reverse;
+        }
+        
+        .advanced-glitch::before,
+        .advanced-glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .advanced-glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-1 5s infinite linear alternate-reverse;
+        }
+        
+        .advanced-glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim-1 {
+            0% {
+                clip: rect(2px, 9999px, 30px, 0);
+                transform: skew(0.65deg);
+            }
+            5% {
+                clip: rect(54px, 9999px, 72px, 0);
+                transform: skew(0.5deg);
+            }
+            10% {
+                clip: rect(45px, 9999px, 46px, 0);
+                transform: skew(0.84deg);
+            }
+            15% {
+                clip: rect(47px, 9999px, 31px, 0);
+                transform: skew(0.37deg);
+            }
+            20% {
+                clip: rect(4px, 9999px, 91px, 0);
+                transform: skew(0.21deg);
+            }
+            25% {
+                clip: rect(99px, 9999px, 92px, 0);
+                transform: skew(0.72deg);
+            }
+            30% {
+                clip: rect(29px, 9999px, 58px, 0);
+                transform: skew(0.67deg);
+            }
+            35% {
+                clip: rect(95px, 9999px, 35px, 0);
+                transform: skew(0.16deg);
+            }
+            40% {
+                clip: rect(96px, 9999px, 84px, 0);
+                transform: skew(0.2deg);
+            }
+            45% {
+                clip: rect(46px, 9999px, 31px, 0);
+                transform: skew(0.11deg);
+            }
+            50% {
+                clip: rect(42px, 9999px, 81px, 0);
+                transform: skew(0.52deg);
+            }
+            55% {
+                clip: rect(7px, 9999px, 56px, 0);
+                transform: skew(0.14deg);
+            }
+            60% {
+                clip: rect(89px, 9999px, 99px, 0);
+                transform: skew(0.92deg);
+            }
+            65% {
+                clip: rect(83px, 9999px, 68px, 0);
+                transform: skew(0.94deg);
+            }
+            70% {
+                clip: rect(5px, 9999px, 57px, 0);
+                transform: skew(0.08deg);
+            }
+            75% {
+                clip: rect(97px, 9999px, 17px, 0);
+                transform: skew(0.74deg);
+            }
+            80% {
+                clip: rect(27px, 9999px, 21px, 0);
+                transform: skew(0.31deg);
+            }
+            85% {
+                clip: rect(52px, 9999px, 94px, 0);
+                transform: skew(0.09deg);
+            }
+            90% {
+                clip: rect(70px, 9999px, 46px, 0);
+                transform: skew(0.4deg);
+            }
+            95% {
+                clip: rect(51px, 9999px, 64px, 0);
+                transform: skew(0.19deg);
+            }
+            100% {
+                clip: rect(87px, 9999px, 85px, 0);
+                transform: skew(0.07deg);
+            }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0% {
+                clip: rect(11px, 9999px, 14px, 0);
+                transform: skew(0.6deg);
+            }
+            5% {
+                clip: rect(69px, 9999px, 83px, 0);
+                transform: skew(0.72deg);
+            }
+            10% {
+                clip: rect(20px, 9999px, 72px, 0);
+                transform: skew(0.83deg);
+            }
+            15% {
+                clip: rect(3px, 9999px, 15px, 0);
+                transform: skew(0.05deg);
+            }
+            20% {
+                clip: rect(90px, 9999px, 40px, 0);
+                transform: skew(0.93deg);
+            }
+            25% {
+                clip: rect(34px, 9999px, 93px, 0);
+                transform: skew(0.93deg);
+            }
+            30% {
+                clip: rect(48px, 9999px, 62px, 0);
+                transform: skew(0.94deg);
+            }
+            35% {
+                clip: rect(76px, 9999px, 81px, 0);
+                transform: skew(0.98deg);
+            }
+            40% {
+                clip: rect(65px, 9999px, 73px, 0);
+                transform: skew(0.64deg);
+            }
+            45% {
+                clip: rect(3px, 9999px, 73px, 0);
+                transform: skew(0.63deg);
+            }
+            50% {
+                clip: rect(13px, 9999px, 98px, 0);
+                transform: skew(0.07deg);
+            }
+            55% {
+                clip: rect(90px, 9999px, 96px, 0);
+                transform: skew(0.04deg);
+            }
+            60% {
+                clip: rect(15px, 9999px, 43px, 0);
+                transform: skew(0.73deg);
+            }
+            65% {
+                clip: rect(95px, 9999px, 38px, 0);
+                transform: skew(0.61deg);
+            }
+            70% {
+                clip: rect(28px, 9999px, 35px, 0);
+                transform: skew(0.04deg);
+            }
+            75% {
+                clip: rect(54px, 9999px, 75px, 0);
+                transform: skew(0.03deg);
+            }
+            80% {
+                clip: rect(82px, 9999px, 97px, 0);
+                transform: skew(0.76deg);
+            }
+            85% {
+                clip: rect(18px, 9999px, 21px, 0);
+                transform: skew(0.65deg);
+            }
+            90% {
+                clip: rect(94px, 9999px, 66px, 0);
+                transform: skew(0.18deg);
+            }
+            95% {
+                clip: rect(83px, 9999px, 95px, 0);
+                transform: skew(0.35deg);
+            }
+            100% {
+                clip: rect(30px, 9999px, 39px, 0);
+                transform: skew(0.01deg);
+            }
+        }
+        
+        @keyframes glitch-skew {
+            0% {
+                transform: skew(-1deg);
+            }
+            10% {
+                transform: skew(0.5deg);
+            }
+            20% {
+                transform: skew(0.7deg);
+            }
+            30% {
+                transform: skew(0.4deg);
+            }
+            40% {
+                transform: skew(-0.2deg);
+            }
+            50% {
+                transform: skew(-0.7deg);
+            }
+            60% {
+                transform: skew(0.2deg);
+            }
+            70% {
+                transform: skew(0.3deg);
+            }
+            80% {
+                transform: skew(-0.6deg);
+            }
+            90% {
+                transform: skew(0.4deg);
+            }
+            100% {
+                transform: skew(-0.8deg);
+            }
+        }
+        
+        /* Scanner line effect */
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, 
+                rgba(57, 255, 20, 0) 0%,
+                rgba(57, 255, 20, 0.5) 20%, 
+                rgba(57, 255, 20, 0.8) 50%,
+                rgba(57, 255, 20, 0.5) 80%,
+                rgba(57, 255, 20, 0) 100%
+            );
+            box-shadow: 0 0 12px 2px rgba(57, 255, 20, 0.5);
+            z-index: 2;
+            opacity: 0.7;
+            animation: scannerMove 3s ease-in-out infinite;
+        }
+        
+        @keyframes scannerMove {
+            0%, 100% { top: 0; }
+            50% { top: calc(100% - 5px); }
+        }
+        
+        /* Terminal vibration effect */
+        @keyframes terminal-vibrate {
+            0%, 100% { transform: translate(0); }
+            10% { transform: translate(-2px, -2px); }
+            20% { transform: translate(2px, -1px); }
+            30% { transform: translate(-1px, 2px); }
+            40% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            60% { transform: translate(1px, -2px); }
+            70% { transform: translate(-2px, 1px); }
+            80% { transform: translate(2px, 1px); }
+            90% { transform: translate(-1px, -1px); }
+        }
+        
+        .terminal-vibrate {
+            animation: terminal-vibrate 0.3s linear;
+        }
+        
+        /* Page transition overlay */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.9);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .page-transition.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .transition-glitch {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: monospace;
+            color: #39FF14;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+            animation: text-flicker 0.2s infinite alternate;
+        }
+        
+        @keyframes text-flicker {
+            0% { opacity: 1; }
+            25% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            75% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-white">
+    <!-- Loading Screen -->
+    <div class="loading" id="loading-screen">
+        <div class="loading-text terminal-text" id="loading-text">Initializing CR4CK...</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-terminal-black bg-opacity-90 border-b border-neon-green">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-neon-green text-2xl font-bold glitch" data-text="CR4CK">CR4CK</div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#home" class="text-white hover:text-neon-green transition-colors">Home</a>
+                <a href="#about" class="text-white hover:text-neon-green transition-colors">Who We Are</a>
+                <a href="#" id="contact-trigger" class="text-white hover:text-neon-green transition-colors">Contact</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white hover:text-neon-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-terminal-black bg-opacity-95 border-b border-neon-green">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#home" class="text-white hover:text-neon-green transition-colors">Home</a>
+                <a href="#about" class="text-white hover:text-neon-green transition-colors">Who We Are</a>
+                <a href="#" id="mobile-contact-trigger" class="text-white hover:text-neon-green transition-colors">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="matrix-bg"></div>
+        </div>
+        <div class="particles absolute inset-0 z-0"></div>
+        <div class="container mx-auto z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 advanced-glitch" data-text="CR4CK">CR4CK</h1>
+                <p class="text-xl md:text-2xl mb-8 typewriter-text"></p>
+                <div class="glitch-btn inline-block pulse-border">
+                    <a href="#about" id="discover-btn" class="bg-transparent border-2 border-neon-green text-neon-green hover:bg-neon-green hover:text-black transition-all px-6 py-3 rounded-md font-mono uppercase tracking-wider">Discover</a>
+                </div>
+                <div class="mt-12">
+                    <div class="cyber-signature" id="signature">ズﾑ尺ｲﾉズ</div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-neon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </div>
+    </section>
+
+    <!-- Who We Are Section -->
+    <section id="about" class="min-h-screen flex items-center px-4 py-20 bg-terminal-black">
+        <div class="container mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 text-center glitch" data-text="Who We Are">Who We Are</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="terminal-window bg-dark-bg border-2 border-neon-green rounded-md p-6 mb-12 relative overflow-hidden" style="box-shadow: 0 0 10px rgba(57, 255, 20, 0.3), 0 0 20px rgba(57, 255, 20, 0.1);">
+                    <div class="terminal-header flex items-center mb-4">
+                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <div class="flex-1 text-center text-sm text-gray-400">about.cr4ck</div>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-neon-green terminal-text" id="about-text-1">Initializing identity scan...</p>
+                        <p class="text-white terminal-text hidden" id="about-text-2">We are CR4CK – A community of innovators, problem solvers, and hackers redefining the digital world.</p>
+                        <p class="text-white terminal-text hidden" id="about-text-3">Our collective thrives at the intersection of creativity and technical mastery, pushing boundaries that others consider unbreakable.</p>
+                        <p class="text-white terminal-text hidden" id="about-text-4">We don't just build the future – we hack it into existence, line by line, pixel by pixel.</p>
+                        <p class="text-white terminal-text hidden" id="about-text-5">Somewhere between darkness and light, we forge elegant solutions to complex problems.</p>
+                        <p class="text-neon-green terminal-text hidden" id="about-text-6">[STATUS: DECODED] // Access to CR4CK manifesto granted.</p>
+                    </div>
+                    <div class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-10">
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-neon-green opacity-20"></div>
+                    </div>
+                    <div class="absolute top-0 left-0 w-full h-full pointer-events-none terminal-matrix-rain" id="terminal-matrix-rain"></div>
+                    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                        <div class="scanner-line"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="card-container">
+                    <div class="card-3d bg-dark-bg border border-gray-800 p-6 rounded-xl transform transition-all hover:scale-105 hover:border-neon-green">
+                        <div class="card-content">
+                            <div class="text-neon-green text-4xl mb-4">01</div>
+                            <h3 class="text-xl font-bold mb-2">Digital Artistry</h3>
+                            <p class="text-gray-400">Coding as an art form. We sculpt algorithms and craft interfaces that merge beauty with functionality in the digital realm.</p>
+                        </div>
+                    </div>
+                    <div class="card-3d bg-dark-bg border border-gray-800 p-6 rounded-xl transform transition-all hover:scale-105 hover:border-neon-green">
+                        <div class="card-content">
+                            <div class="text-neon-green text-4xl mb-4">02</div>
+                            <h3 class="text-xl font-bold mb-2">Technical Excellence</h3>
+                            <p class="text-gray-400">Where others see limitations, we see opportunities. Our hackers push technologies beyond their intended capabilities.</p>
+                        </div>
+                    </div>
+                    <div class="card-3d bg-dark-bg border border-gray-800 p-6 rounded-xl transform transition-all hover:scale-105 hover:border-neon-green">
+                        <div class="card-content">
+                            <div class="text-neon-green text-4xl mb-4">03</div>
+                            <h3 class="text-xl font-bold mb-2">Future-Proof</h3>
+                            <p class="text-gray-400">We don't follow trends – we create them. Our solutions evolve with technology, remaining relevant in an ever-changing digital landscape.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Popup -->
+    <div class="contact-popup fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-80">
+        <div class="bg-terminal-black border-2 border-neon-green rounded-md w-full max-w-md p-6 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold glitch" data-text="Contact Us">Contact Us</h3>
+                <button class="close-popup text-white hover:text-neon-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="contact-form" class="space-y-4" onsubmit="return false;">
+                <div>
+                    <label for="name" class="block text-sm mb-1 text-gray-400">Name</label>
+                    <input type="text" id="name" name="name" required class="w-full bg-dark-bg border border-gray-800 focus:border-neon-green text-white p-2 rounded-md focus:outline-none">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm mb-1 text-gray-400">Email</label>
+                    <input type="email" id="email" name="email" required class="w-full bg-dark-bg border border-gray-800 focus:border-neon-green text-white p-2 rounded-md focus:outline-none">
+                </div>
+                <div>
+                    <label for="message" class="block text-sm mb-1 text-gray-400">Message</label>
+                    <textarea id="message" name="message" rows="4" required class="w-full bg-dark-bg border border-gray-800 focus:border-neon-green text-white p-2 rounded-md focus:outline-none"></textarea>
+                </div>
+                <div class="hidden" id="honeypot">
+                    <label for="bot-check">Leave this empty</label>
+                    <input type="text" id="bot-check" name="bot-check">
+                </div>
+                <button type="submit" class="w-full bg-neon-green text-black font-bold py-2 px-4 rounded-md hover:bg-opacity-80 transition-all">Send Message</button>
+            </form>
+            <div id="form-success" class="hidden text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-neon-green mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <p class="text-neon-green">Message sent successfully!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-terminal-black border-t border-gray-800 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-neon-green text-2xl font-bold mb-4 md:mb-0 glitch" data-text="CR4CK">CR4CK</div>
+                <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                    <a href="https://www.instagram.com/karxtiik_?igsh=cmc5bjFhZmVhdG5y" target="_blank" rel="noopener noreferrer" class="flex items-center text-white hover:text-neon-green transition-all transform hover:scale-110" title="Follow us on Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-instagram mr-2">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                        <span class="text-sm" style="background: linear-gradient(to right, #39FF14, #00bfff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ズﾑ尺ｲﾉズ</span>
+                    </a>
+                    <a href="https://t.me/karxtiiik" target="_blank" rel="noopener noreferrer" class="flex items-center text-white hover:text-neon-green transition-all transform hover:scale-110" title="Connect with us on Telegram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send mr-2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span class="text-sm" style="background: linear-gradient(to right, #39FF14, #00bfff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ズﾑ尺ｲﾉズ</span>
+                    </a>
+                </div>
+                <div class="text-gray-400 text-sm">
+                    © 2023 CR4CK. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // GSAP Animations
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Loading animation
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingText = document.getElementById('loading-text');
+            
+            const loadingMessages = [
+                'Initializing CR4CK...',
+                'Establishing connection...',
+                'Decrypting interface...',
+                'Access granted...'
+            ];
+            
+            let messageIndex = 0;
+            
+            const loadingInterval = setInterval(() => {
+                messageIndex++;
+                if (messageIndex < loadingMessages.length) {
+                    loadingText.textContent = loadingMessages[messageIndex];
+                } else {
+                    clearInterval(loadingInterval);
+                    gsap.to(loadingScreen, {
+                        opacity: 0,
+                        duration: 1,
+                        onComplete: () => {
+                            loadingScreen.style.display = 'none';
+                            
+                            // Start animations after loading screen
+                            startAnimations();
+                        }
+                    });
+                }
+            }, 1000);
+            
+            function startAnimations() {
+                // Hero typing effect
+                const typewriter = document.querySelector('.typewriter-text');
+                const text = "Breaking the boundaries of digital innovation.";
+                let i = 0;
+                
+                function typeWriter() {
+                    if (i < text.length) {
+                        typewriter.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 50);
+                    }
+                }
+                
+                typeWriter();
+                
+                // About section terminal text animation
+                const aboutTexts = [
+                    document.getElementById('about-text-1'),
+                    document.getElementById('about-text-2'),
+                    document.getElementById('about-text-3'),
+                    document.getElementById('about-text-4'),
+                    document.getElementById('about-text-5'),
+                    document.getElementById('about-text-6')
+                ];
+                
+                let currentTextIndex = 0;
+                
+                function showNextText() {
+                    if (currentTextIndex < aboutTexts.length - 1) {
+                        setTimeout(() => {
+                            aboutTexts[currentTextIndex].classList.add('hidden');
+                            currentTextIndex++;
+                            aboutTexts[currentTextIndex].classList.remove('hidden');
+                            
+                            // Play typing sound
+                            const typingSound = document.getElementById('typing-sound');
+                            if (typingSound) {
+                                typingSound.currentTime = 0;
+                                typingSound.play().catch(e => console.log("Audio playback error:", e));
+                                
+                                // Stop sound after a short duration
+                                setTimeout(() => {
+                                    typingSound.pause();
+                                    
+                                    // Play terminal beep for the last line
+                                    if (currentTextIndex === aboutTexts.length - 1) {
+                                        const terminalBeep = document.getElementById('terminal-beep');
+                                        if (terminalBeep) {
+                                            terminalBeep.currentTime = 0;
+                                            terminalBeep.play().catch(e => console.log("Audio playback error:", e));
+                                        }
+                                    }
+                                }, 1500);
+                            }
+                            
+                            // Continue animation sequence
+                            if (currentTextIndex < aboutTexts.length - 1) {
+                                // Longer delay for the last line to let users read the full message
+                                const delay = currentTextIndex === aboutTexts.length - 2 ? 3000 : 2000;
+                                showNextText(delay);
+                            }
+                        }, currentTextIndex === 0 ? 1000 : 2500); // Faster for first transition, slower for others
+                    }
+                }
+                
+                // Start the About section animations when scrolled into view
+                ScrollTrigger.create({
+                    trigger: "#about",
+                    start: "top 80%",
+                    onEnter: () => showNextText()
+                });
+                
+                // Enhanced 3D card animations for the About section
+                const cardContainer = document.querySelector('.grid-cols-1');
+                const cards = document.querySelectorAll('.card-3d');
+                
+                // First, set default state for the cards
+                gsap.set(cards, {
+                    opacity: 0,
+                    y: 50,
+                    transformOrigin: "center center"
+                });
+                
+                // Handle the card animations on scroll
+                ScrollTrigger.create({
+                    trigger: cardContainer,
+                    start: "top 75%",
+                    onEnter: () => {
+                        // Animate cards in sequence
+                        gsap.to(cards, {
+                            opacity: 1,
+                            y: 0,
+                            stagger: 0.15,
+                            duration: 0.8,
+                            ease: "back.out(1.2)",
+                            onComplete: () => {
+                                // Flag for knowing if the animation was triggered by scroll
+                                window.cardsAnimatedByScroll = true;
+                            }
+                        });
+                    }
+                });
+                
+                // Discover button smooth scroll + enhanced card animations
+                const discoverBtn = document.querySelector('.glitch-btn a');
+                discoverBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Show transition overlay
+                    const pageTransition = document.getElementById('page-transition');
+                    pageTransition.classList.add('active');
+                    
+                    // Change text after a delay for effect
+                    setTimeout(() => {
+                        document.querySelector('.transition-glitch').textContent = 'DECODING';
+                    }, 800);
+                    
+                    // Smooth scroll to About section after transition effect
+                    setTimeout(() => {
+                        // Hide transition
+                        pageTransition.classList.remove('active');
+                        
+                        // Scroll to about section
+                        gsap.to(window, {
+                            duration: 1.2, 
+                            scrollTo: {y: "#about", offsetY: 50},
+                            ease: "power2.inOut",
+                            onComplete: () => {
+                                // If cards weren't already animated by scroll
+                                if (!window.cardsAnimatedByScroll) {
+                                    // Standard animation (matches ScrollTrigger animation)
+                                    gsap.to(cards, {
+                                        opacity: 1,
+                                        y: 0,
+                                        stagger: 0.15,
+                                        duration: 0.8,
+                                        ease: "back.out(1.2)"
+                                    });
+                                } else {
+                                    // If cards were already shown, create a "reset and animate" effect
+                                    // First, remove any applied animations
+                                    cards.forEach(card => {
+                                        card.classList.remove("animated");
+                                        card.classList.remove("discover-animated");
+                                    });
+                                    
+                                    // Reset transform style for fresh animation
+                                    gsap.set(cards, {clearProps: "transform"});
+                                    
+                                    // Play sound effect for dramatic effect
+                                    const cardSound = document.getElementById('card-animation-sound');
+                                    cardSound.currentTime = 0; // Reset sound to beginning
+                                    cardSound.play().catch(e => console.log("Audio playback error:", e));
+                                    
+                                    // Add extra glow to the terminal window
+                                    const terminalWindow = document.querySelector('.terminal-window');
+                                    terminalWindow.style.boxShadow = '0 0 25px rgba(57, 255, 20, 0.6), 0 0 50px rgba(57, 255, 20, 0.3)';
+                                    
+                                    // Add vibration effect to terminal
+                                    terminalWindow.classList.add('terminal-vibrate');
+                                    
+                                    // Refresh matrix characters in terminal for dramatic effect
+                                    createTerminalMatrixRain();
+                                    
+                                    // Reset terminal effects after animation completes
+                                    setTimeout(() => {
+                                        terminalWindow.style.boxShadow = '0 0 10px rgba(57, 255, 20, 0.3), 0 0 20px rgba(57, 255, 20, 0.1)';
+                                        terminalWindow.classList.remove('terminal-vibrate');
+                                    }, 2000);
+                                    
+                                    // Then apply our fancy animation class for an enhanced effect
+                                    setTimeout(() => {
+                                        cards.forEach((card, index) => {
+                                            setTimeout(() => {
+                                                card.classList.add("discover-animated");
+                                            }, index * 200); // Stagger the animations
+                                        });
+                                    }, 100);
+                                }
+                            }
+                        });
+                    }, 800);
+                });
+                
+                // Matrix background animation
+                const matrixBg = document.querySelector('.matrix-bg');
+                
+                function createMatrixRain() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    matrixBg.appendChild(canvas);
+                    
+                    const ctx = canvas.getContext('2d');
+                    const characters = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789';
+                    const columns = canvas.width / 20;
+                    const drops = [];
+                    
+                    for (let i = 0; i < columns; i++) {
+                        drops[i] = 1;
+                    }
+                    
+                    function draw() {
+                        ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        ctx.fillStyle = '#39FF14';
+                        ctx.font = '20px monospace';
+                        
+                        for (let i = 0; i < drops.length; i++) {
+                            const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                            ctx.fillText(text, i * 20, drops[i] * 20);
+                            
+                            if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+                                drops[i] = 0;
+                            }
+                            
+                            drops[i]++;
+                        }
+                    }
+                    
+                    setInterval(draw, 33);
+                }
+                
+                createMatrixRain();
+                
+                // Create terminal matrix rain effect
+                function createTerminalMatrixRain() {
+                    const container = document.getElementById('terminal-matrix-rain');
+                    const containerRect = container.getBoundingClientRect();
+                    const characters = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789';
+                    const columnCount = Math.floor(containerRect.width / 15); // Space columns evenly
+                    
+                    // Clear any existing characters
+                    container.innerHTML = '';
+                    
+                    // Create falling characters
+                    for (let i = 0; i < columnCount; i++) {
+                        const charCount = 3 + Math.floor(Math.random() * 5); // Random number of characters in column
+                        
+                        for (let j = 0; j < charCount; j++) {
+                            const char = document.createElement('div');
+                            char.className = 'matrix-character';
+                            char.textContent = characters.charAt(Math.floor(Math.random() * characters.length));
+                            
+                            // Position randomly within terminal
+                            const xPos = (i * (containerRect.width / columnCount)) + Math.random() * 10;
+                            char.style.left = `${xPos}px`;
+                            
+                            // Random animation duration and delay
+                            const duration = 2 + Math.random() * 5;
+                            const delay = Math.random() * 5;
+                            char.style.animationDuration = `${duration}s`;
+                            char.style.animationDelay = `${delay}s`;
+                            
+                            container.appendChild(char);
+                        }
+                    }
+                }
+                
+                // Create and periodically refresh terminal matrix rain
+                createTerminalMatrixRain();
+                setInterval(() => {
+                    // Refresh matrix characters every 10 seconds
+                    createTerminalMatrixRain();
+                }, 10000);
+                
+                // Text scramble effect for signature
+                const signature = document.getElementById('signature');
+                signature.textContent = "ズﾑ尺ｲﾉズ";
+                const originalText = signature.textContent;
+                const scrambleChars = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
+                
+                function scrambleEffect() {
+                    let iterations = 0;
+                    const maxIterations = 15;
+                    
+                    const interval = setInterval(() => {
+                        signature.textContent = originalText
+                            .split('')
+                            .map((char, index) => {
+                                if (iterations < maxIterations) {
+                                    // Random character during scrambling
+                                    return scrambleChars.charAt(Math.floor(Math.random() * scrambleChars.length));
+                                } else if (index < iterations - maxIterations) {
+                                    // Gradually reveal the original character
+                                    return originalText[index];
+                                } else {
+                                    // Keep scrambling the rest
+                                    return scrambleChars.charAt(Math.floor(Math.random() * scrambleChars.length));
+                                }
+                            })
+                            .join('');
+                            
+                        if (iterations >= maxIterations * 2) {
+                            clearInterval(interval);
+                            signature.textContent = originalText;
+                            // Restart scramble effect after a delay
+                            setTimeout(scrambleEffect, 5000);
+                        }
+                        
+                        iterations++;
+                    }, 60);
+                }
+                
+                // Start scramble effect
+                scrambleEffect();
+                
+                // Create particle effect
+                createParticles();
+            }
+            
+            // Create particle effect
+            function createParticles() {
+                const particlesContainer = document.querySelector('.particles');
+                const particleCount = 50;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    const size = Math.random() * 5 + 1;
+                    
+                    particle.style.position = 'absolute';
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.background = 'rgba(57, 255, 20, 0.7)';
+                    particle.style.borderRadius = '50%';
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.boxShadow = '0 0 10px 2px rgba(57, 255, 20, 0.5)';
+                    
+                    // Set random animation properties
+                    const duration = Math.random() * 15 + 5;
+                    const delay = Math.random() * 5;
+                    
+                    // Animate particles with GSAP
+                    gsap.to(particle, {
+                        x: Math.random() * 200 - 100,
+                        y: Math.random() * 200 - 100,
+                        opacity: 0,
+                        duration: duration,
+                        delay: delay,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: "power1.inOut"
+                    });
+                    
+                    particlesContainer.appendChild(particle);
+                }
+                
+                // 3D card tilt effect
+                const cards = document.querySelectorAll('.card-3d');
+                
+                cards.forEach(card => {
+                    card.addEventListener('mousemove', e => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left; // x position within the element
+                        const y = e.clientY - rect.top;  // y position within the element
+                        
+                        const xRotation = 20 * ((y - rect.height / 2) / rect.height);
+                        const yRotation = -20 * ((x - rect.width / 2) / rect.width);
+                        
+                        card.style.transform = `perspective(1000px) rotateX(${xRotation}deg) rotateY(${yRotation}deg) scale3d(1.05, 1.05, 1.05)`;
+                    });
+                    
+                    card.addEventListener('mouseout', () => {
+                        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                    });
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                if (mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.remove('hidden');
+                    gsap.from(mobileMenu, { height: 0, duration: 0.3 });
+                } else {
+                    gsap.to(mobileMenu, { 
+                        height: 0, 
+                        duration: 0.3,
+                        onComplete: () => mobileMenu.classList.add('hidden')
+                    });
+                }
+            });
+            
+            // Contact popup handling
+            const contactTrigger = document.getElementById('contact-trigger');
+            const mobileContactTrigger = document.getElementById('mobile-contact-trigger');
+            const contactPopup = document.querySelector('.contact-popup');
+            const closePopupButtons = document.querySelectorAll('.close-popup');
+            
+            function openContactPopup() {
+                contactPopup.classList.add('active');
+                gsap.from('.contact-popup > div', {
+                    y: -50,
+                    opacity: 0,
+                    duration: 0.5
+                });
+            }
+            
+            function closeContactPopup() {
+                gsap.to('.contact-popup > div', {
+                    y: -50,
+                    opacity: 0,
+                    duration: 0.3,
+                    onComplete: () => {
+                        contactPopup.classList.remove('active');
+                        gsap.set('.contact-popup > div', { y: 0, opacity: 1 });
+                    }
+                });
+            }
+            
+            contactTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                openContactPopup();
+            });
+            
+            mobileContactTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                openContactPopup();
+                mobileMenu.classList.add('hidden');
+            });
+            
+            closePopupButtons.forEach(button => {
+                button.addEventListener('click', closeContactPopup);
+            });
+            
+            // Close popup when clicking outside
+            contactPopup.addEventListener('click', function(e) {
+                if (e.target === contactPopup) {
+                    closeContactPopup();
+                }
+            });
+            
+            // Form submission handling
+            const contactForm = document.getElementById('contact-form');
+            const formSuccess = document.getElementById('form-success');
+            
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simple spam protection check
+                const honeypot = document.getElementById('bot-check');
+                if (honeypot.value !== '') {
+                    return; // Bot detected
+                }
+                
+                // Simulate form submission
+                contactForm.style.display = 'none';
+                formSuccess.classList.remove('hidden');
+                
+                // Reset and hide success message after 3 seconds
+                setTimeout(() => {
+                    contactForm.reset();
+                    contactForm.style.display = 'block';
+                    formSuccess.classList.add('hidden');
+                    closeContactPopup();
+                }, 3000);
+            });
+        });
+    </script>
+
+    <audio id="card-animation-sound" preload="auto">
+        <source src="https://assets.codepen.io/2236237/sci-fi-sweep.mp3" type="audio/mp3">
+    </audio>
+    
+    <audio id="typing-sound" preload="auto">
+        <source src="https://assets.codepen.io/2236237/keyboard-typing.mp3" type="audio/mp3">
+    </audio>
+    
+    <audio id="terminal-beep" preload="auto">
+        <source src="https://assets.codepen.io/2236237/terminal-beep.mp3" type="audio/mp3">
+    </audio>
+    
+    <!-- Page Transition Overlay -->
+    <div class="page-transition" id="page-transition">
+        <div class="transition-glitch">ACCESSING</div>
+    </div>
+</body>
+</html>
